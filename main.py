@@ -43,7 +43,7 @@ def cosineSimilarity(X, Y):
   cosine = c / float((sum(l1) * sum(l2)) ** 0.5)
   return cosine
 
-def gensimDoc2Vec(X, Y):
+def gensimWord2Vec(X, Y):
   def avg_feature_vector(sentence, model, num_features, index2word_set):
     words = word_tokenize(sentence)
     feature_vec = np.zeros((num_features,), dtype='float32')
@@ -61,9 +61,8 @@ def gensimDoc2Vec(X, Y):
   s1_afv = avg_feature_vector(X, model=model, num_features=150, index2word_set=index2word_set)
   s2_afv = avg_feature_vector(Y, model=model, num_features=150,
     index2word_set=index2word_set)
-  sim = 1 - spatial.distance.cosine(s1_afv, s2_afv)
-  print(sim)
-  return sim
+  similarity = 1 - spatial.distance.cosine(s1_afv, s2_afv)
+  return similarity
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -86,8 +85,8 @@ def index():
       'similarityScore': cosineSimilarity(X, Y)
     })
     result_summary.append({
-      'methodName': 'Gensim Doc2Vec',
-      'similarityScore': gensimDoc2Vec(X, Y)
+      'methodName': 'Gensim Word2Vec',
+      'similarityScore': gensimWord2Vec(X, Y)
     })
     print(result_summary)
 
