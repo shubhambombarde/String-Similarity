@@ -42,7 +42,7 @@ def usingGensimv1(X, Y):
 
   for line in Y_docs:
     query_doc = [w.lower() for w in word_tokenize(line)]
-    query_doc_bow = dictionary.doc2bow(query_doc)   #update an existing dictionary and create bag of words
+    query_doc_bow = [dictionary.doc2bow(query_doc)]   #update an existing dictionary and create bag of words
 
   query_doc_tf_idf = tf_idf[query_doc_bow]
   print('Comparing Result:', sims[query_doc_tf_idf])
@@ -117,5 +117,5 @@ def usingGensimv3(X, Y):
 
   query_doc_tf_idf = tf_idf[query_doc_bow]
   print('Comparing Result:', sims[query_doc_tf_idf])
-
-usingGensimv3("Saturn is yellow planet. It is beautiful.", "Saturn is yellow planet. It is beautiful.")
+usingGensimv1('Mars is the fourth planet in our solar system It is second-smallest planet in the Solar System after Mercury Saturn is yellow planet.', 'Mars is the fourth planet in our solar system It is second-smallest planet in the Solar System after Mercury Saturn is yellow planet.')
+# usingGensimv3("Saturn is yellow planet. It is beautiful.", "Saturn is yellow planet. It is beautiful.")
