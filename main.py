@@ -3,6 +3,7 @@ import numpy as np
 from flask import Flask, render_template, request
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
+from scipy import spatial
 import nltk
 # nltk.download('all')
 
@@ -42,47 +43,27 @@ def cosineSimilarity(X, Y):
   cosine = c / float((sum(l1) * sum(l2)) ** 0.5)
   return cosine
 
-def usingGensim(X, Y):
-  X_docs = []
-  Y_docs = []
+def gensimDoc2Vec(X, Y):
+  def avg_feature_vector(sentence, model, num_features, index2word_set):
+    words = word_tokenize(sentence)
+    feature_vec = np.zeros((num_features,), dtype='float32')
+    n_words = 0
+    for word in words:
+      if word in index2word_set:
+        n_words += 1
+        feature_vec = np.add(feature_vec, model[word])
+    if (n_words > 0):
+      feature_vec = np.divide(feature_vec, n_words)
+    return feature_vec
 
-  # tokenize sentences
-  tokens = sent_tokenize(X)
-  for line in tokens:
-    X_docs.append(line)
-
-  # creating index document with sentence X
-  # Tokenize words and create dictionary
-  gen_docs = [[w.lower() for w in word_tokenize(text)]
-              for text in X_docs]
-
-  # mapping words to unique id's
-  dictionary = gensim.corpora.Dictionary(gen_docs)
-
-  # Create a bag of words
-  corpus = [dictionary.doc2bow(gen_doc) for gen_doc in gen_docs]
-
-  # Term Frequency – Inverse Document Frequency(TF-IDF)
-  tf_idf = gensim.models.TfidfModel(corpus)
-  for doc in tf_idf[corpus]:
-    print([[dictionary[id], np.around(freq, decimals=2)] for id, freq in doc])
-
-  # Creating similarity measure object
-  # building the index
-  sims = gensim.similarities.Similarity('workdir/', tf_idf[corpus],
-    num_features=len(dictionary))
-
-  # creating query document with sentence Y
-  tokens = sent_tokenize(Y)
-  for line in tokens:
-    Y_docs.append(line)
-
-  for line in Y_docs:
-    query_doc = [w.lower() for w in word_tokenize(line)]
-    query_doc_bow = dictionary.doc2bow(query_doc)   #update an existing dictionary and create bag of words
-
-  query_doc_tf_idf = tf_idf[query_doc_bow]
-  print('Comparing Result:', sims[query_doc_tf_idf])
+  model = gensim.models.Word2Vec.load('gensim.models.Word2Vec.bin')
+  index2word_set = set(model.wv.index2word)
+  s1_afv = avg_feature_vector(X, model=model, num_features=150, index2word_set=index2word_set)
+  s2_afv = avg_feature_vector(Y, model=model, num_features=150,
+    index2word_set=index2word_set)
+  sim = 1 - spatial.distance.cosine(s1_afv, s2_afv)
+  print(sim)
+  return sim
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -103,6 +84,10 @@ def index():
     result_summary.append({
       'methodName': 'Cosine Similarity',
       'similarityScore': cosineSimilarity(X, Y)
+    })
+    result_summary.append({
+      'methodName': 'Gensim Doc2Vec',
+      'similarityScore': gensimDoc2Vec(X, Y)
     })
     print(result_summary)
 
