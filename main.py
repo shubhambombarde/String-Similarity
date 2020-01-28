@@ -1,8 +1,10 @@
+import gensim
+import numpy as np
 from flask import Flask, render_template, request
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
 import nltk
-nltk.download('all')
+# nltk.download('all')
 
 app = Flask(__name__)
 
@@ -39,6 +41,48 @@ def cosineSimilarity(X, Y):
     c += l1[i] * l2[i]
   cosine = c / float((sum(l1) * sum(l2)) ** 0.5)
   return cosine
+
+def usingGensim(X, Y):
+  X_docs = []
+  Y_docs = []
+
+  # tokenize sentences
+  tokens = sent_tokenize(X)
+  for line in tokens:
+    X_docs.append(line)
+
+  # creating index document with sentence X
+  # Tokenize words and create dictionary
+  gen_docs = [[w.lower() for w in word_tokenize(text)]
+              for text in X_docs]
+
+  # mapping words to unique id's
+  dictionary = gensim.corpora.Dictionary(gen_docs)
+
+  # Create a bag of words
+  corpus = [dictionary.doc2bow(gen_doc) for gen_doc in gen_docs]
+
+  # Term Frequency – Inverse Document Frequency(TF-IDF)
+  tf_idf = gensim.models.TfidfModel(corpus)
+  for doc in tf_idf[corpus]:
+    print([[dictionary[id], np.around(freq, decimals=2)] for id, freq in doc])
+
+  # Creating similarity measure object
+  # building the index
+  sims = gensim.similarities.Similarity('workdir/', tf_idf[corpus],
+    num_features=len(dictionary))
+
+  # creating query document with sentence Y
+  tokens = sent_tokenize(Y)
+  for line in tokens:
+    Y_docs.append(line)
+
+  for line in Y_docs:
+    query_doc = [w.lower() for w in word_tokenize(line)]
+    query_doc_bow = dictionary.doc2bow(query_doc)   #update an existing dictionary and create bag of words
+
+  query_doc_tf_idf = tf_idf[query_doc_bow]
+  print('Comparing Result:', sims[query_doc_tf_idf])
 
 @app.route("/", methods=['GET', 'POST'])
 def index():

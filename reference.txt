@@ -1,0 +1,2 @@
+cosineSimilarity(): https://www.geeksforgeeks.org/python-measure-similarity-between-two-sentences-using-cosine-similarity/
+usingGensim(): https://dev.to/coderasha/compare-documents-similarity-using-python-nlp-4odp
