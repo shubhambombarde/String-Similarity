@@ -117,5 +117,6 @@ def usingGensimv3(X, Y):
 
   query_doc_tf_idf = tf_idf[query_doc_bow]
   print('Comparing Result:', sims[query_doc_tf_idf])
+
 usingGensimv1('Mars is the fourth planet in our solar system It is second-smallest planet in the Solar System after Mercury Saturn is yellow planet.', 'Mars is the fourth planet in our solar system It is second-smallest planet in the Solar System after Mercury Saturn is yellow planet.')
 # usingGensimv3("Saturn is yellow planet. It is beautiful.", "Saturn is yellow planet. It is beautiful.")
