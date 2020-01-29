@@ -10,6 +10,19 @@ import nltk
 app = Flask(__name__)
 
 
+def avg_feature_vector(sentence, model, num_features, index2word_set):
+  words = word_tokenize(sentence)
+  feature_vec = np.zeros((num_features,), dtype='float32')
+  n_words = 0
+  for word in words:
+    if word in index2word_set:
+      n_words += 1
+      feature_vec = np.add(feature_vec, model[word])
+  if (n_words > 0):
+    feature_vec = np.divide(feature_vec, n_words)
+  return feature_vec
+
+
 def cosineSimilarity(X, Y):
   # tokenization
   X_list = word_tokenize(X)
@@ -44,17 +57,6 @@ def cosineSimilarity(X, Y):
   return cosine
 
 def gensimWord2Vec(X, Y):
-  def avg_feature_vector(sentence, model, num_features, index2word_set):
-    words = word_tokenize(sentence)
-    feature_vec = np.zeros((num_features,), dtype='float32')
-    n_words = 0
-    for word in words:
-      if word in index2word_set:
-        n_words += 1
-        feature_vec = np.add(feature_vec, model[word])
-    if (n_words > 0):
-      feature_vec = np.divide(feature_vec, n_words)
-    return feature_vec
   try:
     model = gensim.models.Word2Vec.load('models/gensim.models.Word2Vec.bin')
     index2word_set = set(model.wv.index2word)
@@ -69,8 +71,12 @@ def gensimWord2Vec(X, Y):
 def gensimDoc2Vec(X, Y):
   try:
     model = gensim.models.Doc2Vec.load('models/gensim.models.Doc2Vec.bin')
-    score = model.wv.similarity(w1=X, w2=Y)
-    return score
+    index2word_set = set(model.wv.index2word)
+    s1_afv = avg_feature_vector(X, model=model, num_features=50, index2word_set=index2word_set)
+    s2_afv = avg_feature_vector(Y, model=model, num_features=50,
+      index2word_set=index2word_set)
+    similarity = 1 - spatial.distance.cosine(s1_afv, s2_afv)
+    return similarity
   except KeyError:
     return 'Insufficient Vocabulary'
 
