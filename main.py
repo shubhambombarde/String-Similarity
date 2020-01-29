@@ -55,14 +55,24 @@ def gensimWord2Vec(X, Y):
     if (n_words > 0):
       feature_vec = np.divide(feature_vec, n_words)
     return feature_vec
+  try:
+    model = gensim.models.Word2Vec.load('models/gensim.models.Word2Vec.bin')
+    index2word_set = set(model.wv.index2word)
+    s1_afv = avg_feature_vector(X, model=model, num_features=150, index2word_set=index2word_set)
+    s2_afv = avg_feature_vector(Y, model=model, num_features=150,
+      index2word_set=index2word_set)
+    similarity = 1 - spatial.distance.cosine(s1_afv, s2_afv)
+    return similarity
+  except KeyError:
+    return 'Insufficient Vocabulary'
 
-  model = gensim.models.Word2Vec.load('gensim.models.Word2Vec.bin')
-  index2word_set = set(model.wv.index2word)
-  s1_afv = avg_feature_vector(X, model=model, num_features=150, index2word_set=index2word_set)
-  s2_afv = avg_feature_vector(Y, model=model, num_features=150,
-    index2word_set=index2word_set)
-  similarity = 1 - spatial.distance.cosine(s1_afv, s2_afv)
-  return similarity
+def gensimDoc2Vec(X, Y):
+  try:
+    model = gensim.models.Doc2Vec.load('models/gensim.models.Doc2Vec.bin')
+    score = model.wv.similarity(w1=X, w2=Y)
+    return score
+  except KeyError:
+    return 'Insufficient Vocabulary'
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -87,6 +97,10 @@ def index():
     result_summary.append({
       'methodName': 'Gensim Word2Vec',
       'similarityScore': gensimWord2Vec(X, Y)
+    })
+    result_summary.append({
+      'methodName': 'Gensim Doc2Vec',
+      'similarityScore': gensimDoc2Vec(X, Y)
     })
     print(result_summary)
 
