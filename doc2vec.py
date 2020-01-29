@@ -20,7 +20,7 @@ def createModel():
   # build vocabulary and train model
   model = gensim.models.Doc2Vec(vector_size=50, min_count=2, epochs=40)
   model.build_vocab(gen_docs)
-  model.save('gensim.models.Doc2Vec.bin')
+  model.save('models/gensim.models.Doc2Vec.bin')
   print('Model created and saved successfully')
 
 
@@ -37,7 +37,7 @@ def avg_feature_vector(sentence, model, num_features, index2word_set):
   return feature_vec
 
 def calculateSimilarity(X, Y):
-  model = gensim.models.Doc2Vec.load('gensim.models.Doc2Vec.bin')
+  model = gensim.models.Doc2Vec.load('models/gensim.models.Doc2Vec.bin')
   score = model.wv.similarity(w1=X, w2=Y)
 
   # index2word_set = set(model.wv.index2word)
@@ -50,6 +50,6 @@ def calculateSimilarity(X, Y):
   return score
 
 
-# createModel()
-score = calculateSimilarity('daylight', 'bright')
-print(score)
+createModel()
+# score = calculateSimilarity('daylight', 'bright')
+# print(score)
